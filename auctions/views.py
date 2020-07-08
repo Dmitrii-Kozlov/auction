@@ -91,8 +91,17 @@ def listing_page(request, page_id):
     page = Listing.objects.get(id=page_id)
     return render(request, "auctions/listing_page.html", {
         'listing':page,
-        'comments':page.comments.all()
+        'comments':page.comments.all(),
+        'form': CommentForm()
     })
 
 def create_comment(request, page_id):
-    pass
+    if request.method == 'POST':
+        page = Listing.objects.get(id=page_id)
+        print('get page')
+        comment = CommentForm(request.POST)
+        new_comment = comment.save(commit=False)
+        #new_comment.listing.add(page)
+        page.comments.add(new_comment,bulk=False)
+        new_comment.save()
+        return HttpResponseRedirect(reverse('listing_page', args=(page.id,)))

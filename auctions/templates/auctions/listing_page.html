@@ -15,4 +15,11 @@
     <li>No comment yet</li>
     {% endfor %}
 </ul>
+<br>
+<h3>Leave comment</h3>
+<form action="{% url 'create_comment' listing.id %}" method="post">
+    {% csrf_token %}
+    {{form}}
+    <input type="submit" value="Comment">
+</form>
 {% endblock %}

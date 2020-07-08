@@ -16,3 +16,7 @@ class Listing(models.Model):
     title = models.CharField(max_length=64)
     description = models.TextField()
     category = models.CharField(max_length=1, choices=CATEGORIES)
+
+class Comment(models.Model):
+    text = models.TextField()
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='comments')

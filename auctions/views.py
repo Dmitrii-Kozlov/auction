@@ -6,13 +6,18 @@ from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 
-from .models import User, Listing
+from .models import User, Listing, Comment
 
 
 class ListingForm(ModelForm):
     class Meta:
         model = Listing
         fields = ['title', 'description', 'category']
+
+class CommentForm(ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['text']
 
 def index(request):
     listings = Listing.objects.all()
@@ -85,5 +90,9 @@ def listing(request):
 def listing_page(request, page_id):
     page = Listing.objects.get(id=page_id)
     return render(request, "auctions/listing_page.html", {
-        'listing':page
+        'listing':page,
+        'comments':page.comments.all()
     })
+
+def create_comment(request, page_id):
+    pass

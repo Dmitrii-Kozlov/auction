@@ -82,3 +82,8 @@ def listing(request):
             'form': ListingForm()
         })
 
+def listing_page(request, page_id):
+    page = Listing.objects.get(id=page_id)
+    return render(request, "auctions/listing_page.html", {
+        'listing':page
+    })

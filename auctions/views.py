@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.db.models import Max
 from django.forms import ModelForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -24,6 +24,7 @@ class BidForm(ModelForm):
     class Meta:
         model = Bid
         fields = ['bid']
+
 
 
 def index(request):
@@ -89,11 +90,17 @@ def listing(request):
         listing = ListingForm(request.POST)
         new_listing = listing.save()
         bid = BidForm(request.POST)
-        new_bid = bid.save(commit=False)
-        new_bid.user = request.user
-        new_bid.listing = new_listing
-        new_bid.save()
-        return HttpResponseRedirect(reverse('index'))
+        if bid.is_valid():
+            new_bid = bid.save(commit=False)
+            new_bid.user = request.user
+            new_bid.listing = new_listing
+            new_bid.save()
+            return HttpResponseRedirect(reverse('index'))
+        else:
+            return render(request, "auctions/listing.html", {
+                'listing_form': ListingForm(),
+                'bid_form': BidForm()
+            })
     else:
         return render(request, "auctions/listing.html",{
             'listing_form': ListingForm(),
@@ -151,10 +158,12 @@ def place_bid(request, page_id):
     if request.method == 'POST':
         page = Listing.objects.get(id=page_id)
         bid = BidForm(request.POST)
-        new_bid = bid.save(commit=False)
-        new_bid.user = request.user
-        new_bid.listing = page
-        request.user.bids.add(new_bid, bulk=False)
-        page.bids.add(new_bid,bulk=False)
-        new_bid.save()
+        if bid.is_valid():
+            new_bid = bid.save(commit=False)
+            new_bid.user = request.user
+            new_bid.listing = page
+            request.user.bids.add(new_bid, bulk=False)
+            page.bids.add(new_bid,bulk=False)
+            new_bid.save()
         return HttpResponseRedirect(reverse('listing_page', args=(page.id,)))
+

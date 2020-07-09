@@ -20,7 +20,11 @@
 {% endif %}
 <br>
 <h2>Current bid</h2>
+{% if bid %}
 ${{bid.bid|floatformat:2}} by {{bid.user}}
+{% else %}
+No bids yet
+{% endif %}
 <br>
 <h3>Place bid</h3>
 <form action="{% url 'place_bid' listing.id %}" method="post">

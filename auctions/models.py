@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.core.validators import DecimalValidator
 from django.db import models
 
@@ -26,7 +27,12 @@ class Comment(models.Model):
     def __str__(self):
         return f'{self.text}'
 
+def valid_bid(bid):
+    if bid < 0:
+        raise ValidationError('Bid must be greater then 0')
+
+
 class Bid(models.Model):
-    bid = models.DecimalField(max_digits=11, decimal_places=2, validators=[DecimalValidator(max_digits=11, decimal_places=2)])
+    bid = models.DecimalField(max_digits=11, decimal_places=2, validators=[valid_bid])
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='bids')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bids')

@@ -20,7 +20,7 @@
 {% endif %}
 <br>
 <h2>Current bid</h2>
-${{bid.bid__max|floatformat:2}}
+${{bid.bid|floatformat:2}} by {{bid.user}}
 <br>
 <h3>Place bid</h3>
 <form action="{% url 'place_bid' listing.id %}" method="post">

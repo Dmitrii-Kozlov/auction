@@ -97,13 +97,13 @@ def listing(request):
 def listing_page(request, page_id):
     page = Listing.objects.get(id=page_id)
     remove = page in request.user.listings.all()
-    print(page.bids.all(),page.bids.all().aggregate(Max('bid')))
+    bid = page.bids.order_by('bid').last()
     return render(request, "auctions/listing_page.html", {
         'listing':page,
         'comments':page.comments.all(),
         'comment_form': CommentForm(),
         'bid_form': BidForm(),
-        'bid': page.bids.all().aggregate(Max('bid')),
+        'bid': bid,
         'remove': remove
     })
 

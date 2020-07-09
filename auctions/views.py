@@ -105,3 +105,14 @@ def create_comment(request, page_id):
         page.comments.add(new_comment,bulk=False)
         new_comment.save()
         return HttpResponseRedirect(reverse('listing_page', args=(page.id,)))
+
+def category(request):
+    return render(request, "auctions/category.html", {
+        "categories": Listing.CATEGORIES
+    })
+
+def category_view(request, category):
+    listings = Listing.objects.filter(category=category).all()
+    return render(request, "auctions/index.html", {
+        "listings": listings
+    })

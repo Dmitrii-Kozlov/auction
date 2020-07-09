@@ -89,10 +89,12 @@ def listing(request):
 
 def listing_page(request, page_id):
     page = Listing.objects.get(id=page_id)
+    remove = page in request.user.listings.all()
     return render(request, "auctions/listing_page.html", {
         'listing':page,
         'comments':page.comments.all(),
-        'form': CommentForm()
+        'form': CommentForm(),
+        'remove': remove
     })
 
 def create_comment(request, page_id):
@@ -115,4 +117,18 @@ def category_view(request, category):
     listings = Listing.objects.filter(category=category).all()
     return render(request, "auctions/index.html", {
         "listings": listings
+    })
+
+def watchlist(request):
+    if request.method == 'POST':
+        try:
+            id = request.POST['add_to_watchlist']
+            request.user.listings.add(id)
+        except:
+            id = request.POST['remove_from_watchlist']
+            request.user.listings.remove(id)
+        return HttpResponseRedirect(reverse('listing_page', args=(id,)))
+    user_list = request.user.listings.all()
+    return render(request, "auctions/index.html", {
+        "listings": user_list
     })

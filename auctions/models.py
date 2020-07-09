@@ -16,6 +16,7 @@ class Listing(models.Model):
     title = models.CharField(max_length=64)
     description = models.TextField()
     category = models.CharField(max_length=1, choices=CATEGORIES)
+    watching = models.ManyToManyField(User,related_name='listings')
 
 class Comment(models.Model):
     text = models.TextField()

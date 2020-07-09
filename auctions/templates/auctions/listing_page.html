@@ -6,6 +6,18 @@
     </div>
 <div>{{listing.description}}</div>
 <div>ID - {{listing.id}}</div>
+<br>
+<form action="{% url 'watchlist'%}" method="post">
+    {% csrf_token %}
+    <button name="add_to_watchlist" value={{listing.id}}>Add to watchlist</button>
+</form>
+{% if remove %}
+<form action="{% url 'watchlist'%}" method="post">
+    {% csrf_token %}
+    <button name="remove_from_watchlist" value={{listing.id}}>Remove from watchlist</button>
+</form>
+{% endif %}
+<br>
 
 <h3>Comments</h3>
 <ul>

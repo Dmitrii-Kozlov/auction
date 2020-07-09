@@ -87,11 +87,17 @@ def register(request):
 def listing(request):
     if request.method == 'POST':
         listing = ListingForm(request.POST)
-        listing.save()
+        new_listing = listing.save()
+        bid = BidForm(request.POST)
+        new_bid = bid.save(commit=False)
+        new_bid.user = request.user
+        new_bid.listing = new_listing
+        new_bid.save()
         return HttpResponseRedirect(reverse('index'))
     else:
         return render(request, "auctions/listing.html",{
-            'form': ListingForm()
+            'listing_form': ListingForm(),
+            'bid_form': BidForm()
         })
 
 def listing_page(request, page_id):

@@ -3,7 +3,8 @@
 {% block body %}
 <form action="{% url 'listing'%}" method="post">
     {% csrf_token %}
-    {{ form }}
+    {{ listing_form }}
+    {{bid_form}}
     <input type="submit" value="Create">
 </form>
 {% endblock %}

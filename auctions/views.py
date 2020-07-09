@@ -1,12 +1,13 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
+from django.db.models import Max
 from django.forms import ModelForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 
-from .models import User, Listing, Comment
+from .models import User, Listing, Comment, Bid
 
 
 class ListingForm(ModelForm):
@@ -18,6 +19,12 @@ class CommentForm(ModelForm):
     class Meta:
         model = Comment
         fields = ['text']
+
+class BidForm(ModelForm):
+    class Meta:
+        model = Bid
+        fields = ['bid']
+
 
 def index(request):
     listings = Listing.objects.all()
@@ -90,20 +97,21 @@ def listing(request):
 def listing_page(request, page_id):
     page = Listing.objects.get(id=page_id)
     remove = page in request.user.listings.all()
+    print(page.bids.all(),page.bids.all().aggregate(Max('bid')))
     return render(request, "auctions/listing_page.html", {
         'listing':page,
         'comments':page.comments.all(),
-        'form': CommentForm(),
+        'comment_form': CommentForm(),
+        'bid_form': BidForm(),
+        'bid': page.bids.all().aggregate(Max('bid')),
         'remove': remove
     })
 
 def create_comment(request, page_id):
     if request.method == 'POST':
         page = Listing.objects.get(id=page_id)
-        print('get page')
         comment = CommentForm(request.POST)
         new_comment = comment.save(commit=False)
-        #new_comment.listing.add(page)
         page.comments.add(new_comment,bulk=False)
         new_comment.save()
         return HttpResponseRedirect(reverse('listing_page', args=(page.id,)))
@@ -132,3 +140,15 @@ def watchlist(request):
     return render(request, "auctions/index.html", {
         "listings": user_list
     })
+
+def place_bid(request, page_id):
+    if request.method == 'POST':
+        page = Listing.objects.get(id=page_id)
+        bid = BidForm(request.POST)
+        new_bid = bid.save(commit=False)
+        new_bid.user = request.user
+        new_bid.listing = page
+        request.user.bids.add(new_bid, bulk=False)
+        page.bids.add(new_bid,bulk=False)
+        new_bid.save()
+        return HttpResponseRedirect(reverse('listing_page', args=(page.id,)))

@@ -19,7 +19,16 @@
 </form>
 {% endif %}
 <br>
-
+<h2>Current bid</h2>
+${{bid.bid__max|floatformat:2}}
+<br>
+<h3>Place bid</h3>
+<form action="{% url 'place_bid' listing.id %}" method="post">
+    {% csrf_token %}
+    {{bid_form}}
+    <input type="submit" value="Place Bid">
+</form>
+<br>
 <h3>Comments</h3>
 <ul>
     {%for comment in comments %}
@@ -32,7 +41,7 @@
 <h3>Leave comment</h3>
 <form action="{% url 'create_comment' listing.id %}" method="post">
     {% csrf_token %}
-    {{form}}
+    {{comment_form}}
     <input type="submit" value="Comment">
 </form>
 {% endblock %}

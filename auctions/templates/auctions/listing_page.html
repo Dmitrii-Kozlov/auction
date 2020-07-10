@@ -7,6 +7,12 @@
 <div>{{listing.description}}</div>
 <div>ID - {{listing.id}}</div>
 <br>
+{% if active %}
+<h2>Auction is active</h2>
+{% else %}
+<h2>Auction is closed</h2>
+{% endif %}
+<br>
 {% if not remove %}
 <form action="{% url 'watchlist'%}" method="post">
     {% csrf_token %}
@@ -33,10 +39,17 @@ No bids yet
     <input type="submit" value="Place Bid">
 </form>
 <br>
+{% if close_auction %}
+<form action="{% url 'close_auction'%}" method="post">
+    {% csrf_token %}
+    <button name="close_auction" value={{listing.id}}>Close auction</button>
+</form>
+{% endif %}
+<br>
 <h3>Comments</h3>
 <ul>
     {%for comment in comments %}
-    <li>{{comment}}</li>
+    <li>{{comment.text}} by {{comment.user}}</li>
     {% empty %}
     <li>No comment yet</li>
     {% endfor %}

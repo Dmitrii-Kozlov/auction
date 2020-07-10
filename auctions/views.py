@@ -28,7 +28,7 @@ class BidForm(ModelForm):
 
 
 def index(request):
-    listings = Listing.objects.all()
+    listings = Listing.objects.filter(active=True)
     return render(request, "auctions/index.html", {
         "listings": listings
     })
@@ -88,6 +88,8 @@ def register(request):
 def listing(request):
     if request.method == 'POST':
         listing = ListingForm(request.POST)
+        new_listing = listing.save(commit=False)
+        new_listing.owner = request.user
         new_listing = listing.save()
         bid = BidForm(request.POST)
         if bid.is_valid():
@@ -110,6 +112,7 @@ def listing(request):
 def listing_page(request, page_id):
     page = Listing.objects.get(id=page_id)
     remove = page in request.user.listings.all()
+    close_auction = page.active and request.user == page.owner
     bid = page.bids.order_by('bid').last()
     return render(request, "auctions/listing_page.html", {
         'listing':page,
@@ -117,7 +120,9 @@ def listing_page(request, page_id):
         'comment_form': CommentForm(),
         'bid_form': BidForm(),
         'bid': bid,
-        'remove': remove
+        'remove': remove,
+        'close_auction':close_auction,
+        'active':page.active
     })
 
 def create_comment(request, page_id):
@@ -125,6 +130,7 @@ def create_comment(request, page_id):
         page = Listing.objects.get(id=page_id)
         comment = CommentForm(request.POST)
         new_comment = comment.save(commit=False)
+        new_comment.user = request.user
         page.comments.add(new_comment,bulk=False)
         new_comment.save()
         return HttpResponseRedirect(reverse('listing_page', args=(page.id,)))
@@ -167,3 +173,10 @@ def place_bid(request, page_id):
             new_bid.save()
         return HttpResponseRedirect(reverse('listing_page', args=(page.id,)))
 
+def close_auction(request):
+    if request.method == 'POST':
+        id = request.POST['close_auction']
+        page = Listing.objects.get(id=id)
+        page.active = False
+        page.save()
+        return HttpResponseRedirect(reverse('index'))

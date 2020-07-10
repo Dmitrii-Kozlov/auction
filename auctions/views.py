@@ -1,7 +1,8 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.forms import ModelForm
+from django.forms import ModelForm, TextInput, Textarea, NumberInput
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -14,16 +15,26 @@ class ListingForm(ModelForm):
     class Meta:
         model = Listing
         fields = ['title', 'description', 'category']
+        widgets = {
+            'title': TextInput(attrs={'class': 'form-control'}),
+            'description': Textarea(attrs={'class': 'form-control'}),
+        }
 
 class CommentForm(ModelForm):
     class Meta:
         model = Comment
         fields = ['text']
+        widgets = {
+            'text': Textarea(attrs={'class': 'form-control'})
+        }
 
 class BidForm(ModelForm):
     class Meta:
         model = Bid
         fields = ['bid']
+        widgets = {
+            'bid': NumberInput(attrs={'class': 'form-control'})
+        }
 
 
 
@@ -85,6 +96,7 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+@login_required
 def listing(request):
     if request.method == 'POST':
         listing = ListingForm(request.POST)
@@ -111,7 +123,10 @@ def listing(request):
 
 def listing_page(request, page_id):
     page = Listing.objects.get(id=page_id)
-    remove = page in request.user.listings.all()
+    try:
+        remove = page in request.user.listings.all()
+    except:
+        remove = False
     close_auction = page.active and request.user == page.owner
     bid = page.bids.order_by('bid').last()
     return render(request, "auctions/listing_page.html", {
@@ -125,6 +140,7 @@ def listing_page(request, page_id):
         'active':page.active
     })
 
+@login_required
 def create_comment(request, page_id):
     if request.method == 'POST':
         page = Listing.objects.get(id=page_id)
@@ -146,6 +162,7 @@ def category_view(request, category):
         "listings": listings
     })
 
+@login_required
 def watchlist(request):
     if request.method == 'POST':
         try:
@@ -160,6 +177,7 @@ def watchlist(request):
         "listings": user_list
     })
 
+@login_required
 def place_bid(request, page_id):
     if request.method == 'POST':
         page = Listing.objects.get(id=page_id)
@@ -173,6 +191,7 @@ def place_bid(request, page_id):
             new_bid.save()
         return HttpResponseRedirect(reverse('listing_page', args=(page.id,)))
 
+@login_required
 def close_auction(request):
     if request.method == 'POST':
         id = request.POST['close_auction']

@@ -2,63 +2,79 @@
 
 {% block body %}
 <div>
+    {% if active %}
+<h2>Auction is active.</h2>
+{% else %}
+<h2>Auction is closed. {% if user == bid.user %} You are the winner! {% endif %}</h2>
+{% endif %}
+<br>
 <h2>Title: {{listing.title}}</h2>
     </div>
 <div>{{listing.description}}</div>
 <div>ID - {{listing.id}}</div>
 <br>
-{% if active %}
-<h2>Auction is active</h2>
-{% else %}
-<h2>Auction is closed</h2>
-{% endif %}
+
+    <div class="form-group col-md-3 mb-0">
+        {% if user.is_authenticated %}
+        {% if not remove %}
+        <form action="{% url 'watchlist'%}" method="post">
+            {% csrf_token %}
+            <button name="add_to_watchlist" class="btn btn-primary" value={{listing.id}}>Add to watchlist</button>
+        </form>
+        {% else %}
+        <form action="{% url 'watchlist'%}" method="post">
+            {% csrf_token %}
+            <button name="remove_from_watchlist" class="btn btn-primary" value={{listing.id}}>Remove from watchlist</button>
+        </form>
+        {% endif %}
+        {% endif %}
+    </div>
 <br>
-{% if not remove %}
-<form action="{% url 'watchlist'%}" method="post">
-    {% csrf_token %}
-    <button name="add_to_watchlist" value={{listing.id}}>Add to watchlist</button>
-</form>
-{% else %}
-<form action="{% url 'watchlist'%}" method="post">
-    {% csrf_token %}
-    <button name="remove_from_watchlist" value={{listing.id}}>Remove from watchlist</button>
-</form>
-{% endif %}
 <br>
-<h2>Current bid</h2>
-{% if bid %}
-${{bid.bid|floatformat:2}} by {{bid.user}}
-{% else %}
-No bids yet
-{% endif %}
-<br>
-<h3>Place bid</h3>
-<form action="{% url 'place_bid' listing.id %}" method="post">
-    {% csrf_token %}
-    {{bid_form}}
-    <input type="submit" value="Place Bid">
-</form>
-<br>
-{% if close_auction %}
-<form action="{% url 'close_auction'%}" method="post">
-    {% csrf_token %}
-    <button name="close_auction" value={{listing.id}}>Close auction</button>
-</form>
-{% endif %}
-<br>
-<h3>Comments</h3>
-<ul>
-    {%for comment in comments %}
-    <li>{{comment.text}} by {{comment.user}}</li>
-    {% empty %}
-    <li>No comment yet</li>
-    {% endfor %}
-</ul>
-<br>
-<h3>Leave comment</h3>
-<form action="{% url 'create_comment' listing.id %}" method="post">
-    {% csrf_token %}
-    {{comment_form}}
-    <input type="submit" value="Comment">
-</form>
+    <div class="form-group col-md-3 mb-0">
+        <strong>Current bid</strong> -
+        {% if bid %}
+        ${{bid.bid|floatformat:2}} by {{bid.user}}
+        {% else %}
+        No bids yet
+        {% endif %}
+    </div>
+
+    <div class="form-group col-md-3 mb-0">
+         {% if active and user.is_authenticated %}
+        <form action="{% url 'place_bid' listing.id %}" method="post">
+            {% csrf_token %}
+            {{bid_form}}
+            <button class="btn btn-primary">Place bid</button>
+        </form>
+        {% endif %}
+        <br>
+        {% if close_auction %}
+        <form action="{% url 'close_auction'%}" method="post">
+            {% csrf_token %}
+            <button name="close_auction" class="btn btn-primary" value={{listing.id}}>Close auction</button>
+        </form>
+        {% endif %}
+        <br>
+    </div>
+    <div class="form-group col-md-6 mb-0">
+        <h3>Comments</h3>
+        <ul>
+            {%for comment in comments %}
+            <li>{{comment.text}} - "{{comment.user}}"</li>
+            {% empty %}
+            <li>No comment yet</li>
+            {% endfor %}
+        </ul>
+        <br>
+        {% if active and user.is_authenticated %}
+        <h3>Leave comment</h3>
+        <form action="{% url 'create_comment' listing.id %}" method="post">
+            {% csrf_token %}
+            {{comment_form}}
+            <button class="btn btn-primary">Comment</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

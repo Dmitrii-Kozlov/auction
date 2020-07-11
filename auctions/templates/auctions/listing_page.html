@@ -8,11 +8,15 @@
 <h2>Auction is closed. {% if user == bid.user %} You are the winner! {% endif %}</h2>
 {% endif %}
 <br>
-<h2>Title: {{listing.title}}</h2>
+    <div class="card mb-3">
+        <img src="{{listing.image}}" class="card-img-top" alt="{{listing.title}}">
+        <div class="card-body">
+          <h5 class="card-title">{{listing.title}}</h5>
+          <p class="card-text">{{listing.description}}</p>
+           <p class="card-text"><small class="text-muted">{{listing.date}}</small></p>
+         </div>
     </div>
-<div>{{listing.description}}</div>
-<div>ID - {{listing.id}}</div>
-<br>
+
 
     <div class="form-group col-md-3 mb-0">
         {% if user.is_authenticated %}

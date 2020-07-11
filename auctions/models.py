@@ -1,7 +1,11 @@
+import datetime
+
+import django.utils
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.core.validators import DecimalValidator
 from django.db import models
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -21,6 +25,8 @@ class Listing(models.Model):
     watching = models.ManyToManyField(User,related_name='listings')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_listings')
     active = models.BooleanField(default=True)
+    date = models.DateField(default=timezone.now)
+    image = models.URLField(default=None, blank=True)
 
 class Comment(models.Model):
     text = models.TextField()

@@ -14,10 +14,11 @@ from .models import User, Listing, Comment, Bid
 class ListingForm(ModelForm):
     class Meta:
         model = Listing
-        fields = ['title', 'description', 'category']
+        fields = ['image','title', 'description', 'category']
         widgets = {
             'title': TextInput(attrs={'class': 'form-control'}),
             'description': Textarea(attrs={'class': 'form-control'}),
+            'image': TextInput(attrs={'class': 'form-control'})
         }
 
 class CommentForm(ModelForm):
@@ -41,7 +42,8 @@ class BidForm(ModelForm):
 def index(request):
     listings = Listing.objects.filter(active=True)
     return render(request, "auctions/index.html", {
-        "listings": listings
+        "listings": listings,
+        'title': 'Active Listings'
     })
 
 
@@ -100,11 +102,11 @@ def register(request):
 def listing(request):
     if request.method == 'POST':
         listing = ListingForm(request.POST)
-        new_listing = listing.save(commit=False)
-        new_listing.owner = request.user
-        new_listing = listing.save()
         bid = BidForm(request.POST)
-        if bid.is_valid():
+        if listing.is_valid() and bid.is_valid():
+            new_listing = listing.save(commit=False)
+            new_listing.owner = request.user
+            new_listing = listing.save()
             new_bid = bid.save(commit=False)
             new_bid.user = request.user
             new_bid.listing = new_listing
@@ -112,8 +114,8 @@ def listing(request):
             return HttpResponseRedirect(reverse('index'))
         else:
             return render(request, "auctions/listing.html", {
-                'listing_form': ListingForm(),
-                'bid_form': BidForm()
+                'listing_form': listing,
+                'bid_form': bid
             })
     else:
         return render(request, "auctions/listing.html",{
@@ -159,7 +161,8 @@ def category(request):
 def category_view(request, category):
     listings = Listing.objects.filter(category=category).all()
     return render(request, "auctions/index.html", {
-        "listings": listings
+        "listings": listings,
+        'title': [x[1] for x in Listing.CATEGORIES if x[0] == category][0]
     })
 
 @login_required
@@ -174,7 +177,8 @@ def watchlist(request):
         return HttpResponseRedirect(reverse('listing_page', args=(id,)))
     user_list = request.user.listings.all()
     return render(request, "auctions/index.html", {
-        "listings": user_list
+        "listings": user_list,
+        'title': 'Watchlist'
     })
 
 @login_required
